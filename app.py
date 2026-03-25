@@ -11,7 +11,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS tarefas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titulo TEXT NOT NULL,
-            descricao TEXT
+            descricao TEXT,
+            status TEXT DEFAULT 'pendente'
         )
     """)
     conn.commit()
@@ -28,23 +29,48 @@ def index():
     if request.method == "POST":
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
+
         if titulo:
-            c.execute("INSERT INTO tarefas (titulo, descricao) VALUES (?, ?)", (titulo, descricao))
+            c.execute(
+                "INSERT INTO tarefas (titulo, descricao) VALUES (?, ?)",
+                (titulo, descricao)
+            )
             conn.commit()
+
         return redirect("/")
-    
-   
 
     c.execute("SELECT * FROM tarefas")
     tarefas = c.fetchall()
     conn.close()
+
     return render_template("index.html", tarefas=tarefas)
 
+# Deletar tarefa
 @app.route("/delete/<int:tarefa_id>", methods=["POST"])
 def delete(tarefa_id):
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
     c.execute("DELETE FROM tarefas WHERE id=?", (tarefa_id,))
+    conn.commit()
+    conn.close()
+    return redirect("/")
+
+# Marcar como concluída
+@app.route("/concluir/<int:tarefa_id>", methods=["POST"])
+def concluir(tarefa_id):
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("UPDATE tarefas SET status='concluida' WHERE id=?", (tarefa_id,))
+    conn.commit()
+    conn.close()
+    return redirect("/")
+
+# Desfazer (voltar para pendente)
+@app.route("/desfazer/<int:tarefa_id>", methods=["POST"])
+def desfazer(tarefa_id):
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("UPDATE tarefas SET status='pendente' WHERE id=?", (tarefa_id,))
     conn.commit()
     conn.close()
     return redirect("/")
