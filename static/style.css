@@ -4,3 +4,5 @@ input, textarea { padding: 5px; margin-bottom: 10px; width: 300px; }
 button { padding: 5px 10px; }
 ul { list-style-type: none; padding: 0; }
 li { background: #fff; margin-bottom: 5px; padding: 10px; border-radius: 5px; }
+.concluida { text-decoration: line-through; color: gray; }
+h2 { margin-top: 30px; }
