@@ -12,7 +12,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titulo TEXT NOT NULL,
             descricao TEXT,
-            status TEXT DEFAULT 'pendente'
+            status TEXT DEFAULT 'pendente',
+            data_limite TEXT
         )
     """)
     conn.commit()
@@ -29,11 +30,12 @@ def index():
     if request.method == "POST":
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
+        data_limite = request.form.get("data_limite")
 
         if titulo:
             c.execute(
-                "INSERT INTO tarefas (titulo, descricao) VALUES (?, ?)",
-                (titulo, descricao)
+                "INSERT INTO tarefas (titulo, descricao, data_limite) VALUES (?, ?, ?)",
+                (titulo, descricao, data_limite)
             )
             conn.commit()
 
@@ -43,7 +45,16 @@ def index():
     tarefas = c.fetchall()
     conn.close()
 
-    return render_template("index.html", tarefas=tarefas)
+    # Contadores
+    pendentes = [t for t in tarefas if t[3] == 'pendente']
+    concluidas = [t for t in tarefas if t[3] == 'concluida']
+
+    return render_template(
+        "index.html",
+        tarefas=tarefas,
+        pendentes=len(pendentes),
+        concluidas=len(concluidas)
+    )
 
 # Deletar tarefa
 @app.route("/delete/<int:tarefa_id>", methods=["POST"])
@@ -76,4 +87,4 @@ def desfazer(tarefa_id):
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
